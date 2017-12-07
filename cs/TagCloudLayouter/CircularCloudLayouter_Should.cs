@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using FluentAssertions;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
@@ -47,7 +48,7 @@ namespace TagCloudLayouter
 		{
 			DoLayout();
 			var hasIntersects = placedRectangles.Any(HasIntersectWithOthers);
-			Assert.AreEqual(false, hasIntersects, "Rectangles have intersects with each others");
+			hasIntersects.Should().BeFalse();
 		}
 
 		[Test]
@@ -57,7 +58,7 @@ namespace TagCloudLayouter
 			var rectanglesCoveredArea = CalculateRectanglesArea(placedRectangles);
 			var circumcircleArea = CalculateСircumcircleArea(placedRectangles);
 			CoverageReport(rectanglesCoveredArea, circumcircleArea);
-			Assert.GreaterOrEqual(rectanglesCoveredArea / circumcircleArea, CompactFactor, "The cloud is not compact enogth");
+			(rectanglesCoveredArea / circumcircleArea).Should().BeGreaterOrEqualTo(CompactFactor);
 		}
 
 		[Test]
@@ -69,7 +70,7 @@ namespace TagCloudLayouter
 			var rectanglesCoveredArea = CalculateRectanglesArea(placedRectangles);
 			var circumcircleArea = CalculateСircumcircleArea(placedRectangles);
 			CoverageReport(rectanglesCoveredArea, circumcircleArea);
-			Assert.LessOrEqual(rectanglesCoveredArea / circumcircleArea, CompactFactor, "The cloud is too compact enogth");
+			(rectanglesCoveredArea / circumcircleArea).Should().BeLessOrEqualTo(CompactFactor);
 		}
 
 		[TearDown]
