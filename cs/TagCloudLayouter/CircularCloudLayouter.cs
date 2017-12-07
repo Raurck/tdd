@@ -7,248 +7,293 @@ using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using TagCloudLayouter.Interfaces;
 
+
 namespace TagCloudLayouter
 {
-    public class CircularCloudLayouter : ICloudLayouter
-    {
-        private const int CanvasWidth = 1920;
-        private const int CanvasHeight = 1024;
-        private const double DeltaAngleDegree = Math.PI / 25;
-        private const int SpiralStepSize = 1;
+	public class CircularCloudLayouter : ICloudLayouter
+	{
 
-        private readonly Point cloudCenter;
-        private readonly List<Rectangle> placedRectangles = new List<Rectangle>();
+		private readonly Point cloudCenter;
+		private readonly List<Rectangle> placedRectangles = new List<Rectangle>();
 
-        public Rectangle PutNextRectangle(Size rectangleSize)
-        {
-            var resultRectangle = FindRectaglePlace(rectangleSize);
-            resultRectangle = CompactRegion(resultRectangle);
-            placedRectangles.Add(resultRectangle);
-            return resultRectangle;
-        }
+		public bool CompactRequired { get; set; } = true;
+		public int CanvasWidth { get; set; } = 1920;
+		public int CanvasHeight { get; set; } = 1024;
+		public double SpiralStepAngleRadians { get; set; } = Math.PI / 25;
+		public int SpiralStepSize { get; set; } = 1;
+		public string DefaultSubdirectory { get; set; } = "results";
+		public string DefaultFileName { get; set; } = "rectangles.png";
 
-        private Rectangle FindRectaglePlace(Size rectangleSize)
-        {
-            var startX = cloudCenter.X - rectangleSize.Width / 2;
-            var startY = cloudCenter.Y - rectangleSize.Height / 2;
-            var currentRectangle = new Rectangle(new Point(startX, startY), rectangleSize);
-            double spiralAngleInRadian = 0;
+		public Rectangle PutNextRectangle(Size rectangleSize)
+		{
+			var resultRectangle = FindRectaglePlace(rectangleSize);
+			if (CompactRequired)
+			{
+				resultRectangle = CompactRegion(resultRectangle);
+			}
+			placedRectangles.Add(resultRectangle);
+			return resultRectangle;
+		}
 
-            while (HasIntersectWithOthers(currentRectangle))
-            {
-                spiralAngleInRadian += DeltaAngleDegree;
-                var spiralRadius = SpiralStepSize * spiralAngleInRadian;
-                var nextX = spiralRadius * Math.Cos(spiralAngleInRadian);
-                var nextY = spiralRadius * Math.Sin(spiralAngleInRadian);
-                currentRectangle.X = (int)Math.Ceiling(startX + nextX);
-                currentRectangle.Y = (int)Math.Ceiling(startY + nextY);
-            }
-            return currentRectangle;
-        }
+		protected virtual Rectangle FindRectaglePlace(Size rectangleSize)
+		{
+			var startX = cloudCenter.X - rectangleSize.Width / 2;
+			var startY = cloudCenter.Y - rectangleSize.Height / 2;
+			var currentRectangle = new Rectangle(new Point(startX, startY), rectangleSize);
+			double spiralAngleInRadian = 0;
 
-        private Rectangle CompactRegion(Rectangle currentRectangle)
-        {
-            var deltaX = currentRectangle.X + currentRectangle.Width / 2 > cloudCenter.X ? -1 : 1;
-            var deltaY = currentRectangle.Y + currentRectangle.Height / 2 > cloudCenter.Y ? -1 : 1;
-            var lastY = currentRectangle.Y;
-            var lastX = currentRectangle.X;
-            var startX = lastX;
-            var startY = lastY;
+			while (HasIntersectWithOthers(currentRectangle))
+			{
+				spiralAngleInRadian += SpiralStepAngleRadians;
+				var spiralRadius = SpiralStepSize * spiralAngleInRadian;
+				var nextX = spiralRadius * Math.Cos(spiralAngleInRadian);
+				var nextY = spiralRadius * Math.Sin(spiralAngleInRadian);
+				currentRectangle.X = (int)Math.Ceiling(startX + nextX);
+				currentRectangle.Y = (int)Math.Ceiling(startY + nextY);
+			}
+			return currentRectangle;
+		}
 
-            while (!HasIntersectWithOthers(currentRectangle) && currentRectangle.Y != (cloudCenter.Y + deltaY * currentRectangle.Height / 2))
-            {
-                lastY = currentRectangle.Y;
-                currentRectangle.Y = currentRectangle.Y + deltaY;
-            }
-            currentRectangle.Y = lastY;
+		protected virtual Rectangle CompactRegion(Rectangle currentRectangle)
+		{
+			var deltaX = currentRectangle.X + currentRectangle.Width / 2 > cloudCenter.X ? -1 : 1;
+			var deltaY = currentRectangle.Y + currentRectangle.Height / 2 > cloudCenter.Y ? -1 : 1;
+			var lastY = currentRectangle.Y;
+			var lastX = currentRectangle.X;
+			var startX = lastX;
+			var startY = lastY;
 
-            while (!HasIntersectWithOthers(currentRectangle) && currentRectangle.X != cloudCenter.X + deltaX * currentRectangle.Width / 2)
-            {
-                lastX = currentRectangle.X;
-                currentRectangle.X = currentRectangle.X + deltaX;
-            }
-            currentRectangle.X = lastX;
+			while (!HasIntersectWithOthers(currentRectangle) && currentRectangle.Y != (cloudCenter.Y + deltaY * currentRectangle.Height / 2))
+			{
+				lastY = currentRectangle.Y;
+				currentRectangle.Y = currentRectangle.Y + deltaY;
+			}
+			currentRectangle.Y = lastY;
 
-            if (currentRectangle.X != startX || currentRectangle.Y != startY)
-            {
-                currentRectangle = CompactRegion(currentRectangle);
-            }
-            return currentRectangle;
-        }
+			while (!HasIntersectWithOthers(currentRectangle) && currentRectangle.X != cloudCenter.X + deltaX * currentRectangle.Width / 2)
+			{
+				lastX = currentRectangle.X;
+				currentRectangle.X = currentRectangle.X + deltaX;
+			}
+			currentRectangle.X = lastX;
 
-        private bool HasIntersectWithOthers(Rectangle currentRectangle)
-        {
-            return placedRectangles.Any(placedRectangle => HasIntersectWithOne(currentRectangle, placedRectangle));
-        }
+			if (currentRectangle.X != startX || currentRectangle.Y != startY)
+			{
+				currentRectangle = CompactRegion(currentRectangle);
+			}
+			return currentRectangle;
+		}
 
-        private static bool HasIntersectWithOne(Rectangle currentRectangle, Rectangle checkedRectangle)
-        {
-            return (currentRectangle.Left <= checkedRectangle.Right &&
-                    checkedRectangle.Left <= currentRectangle.Right &&
-                    currentRectangle.Top <= checkedRectangle.Bottom &&
-                    checkedRectangle.Top <= currentRectangle.Bottom);
-        }
+		protected bool HasIntersectWithOthers(Rectangle currentRectangle)
+		{
+			return placedRectangles.Any(placedRectangle => HasIntersectWithOne(currentRectangle, placedRectangle));
+		}
 
-        public Bitmap Draw()
-        {
-            var result = new Bitmap(CanvasWidth, CanvasHeight);
-            using (var canvas = Graphics.FromImage(result))
-            {
-                canvas.DrawRectangles(new Pen(Color.Blue, 2), placedRectangles.ToArray());
-            }
-            
-            return result;
-        }
+		protected static bool HasIntersectWithOne(Rectangle currentRectangle, Rectangle checkedRectangle)
+		{
+			return (currentRectangle.Left <= checkedRectangle.Right &&
+					checkedRectangle.Left <= currentRectangle.Right &&
+					currentRectangle.Top <= checkedRectangle.Bottom &&
+					checkedRectangle.Top <= currentRectangle.Bottom);
+		}
 
-        public void Save(string fileName)
-        {
-            if (String.IsNullOrWhiteSpace(fileName))
-            {
-                fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "results", "rectangles.png");
-            }
+		protected Bitmap Draw()
+		{
+			var rectangleColorProvider = new RectangleColorProvider(placedRectangles);
+			var result = new Bitmap(CanvasWidth, CanvasHeight);
+			using (var canvas = Graphics.FromImage(result))
+			{
+				foreach (var placedRectangle in placedRectangles)
+				{
+					canvas.DrawRectangle(new Pen(rectangleColorProvider.GetRectangleColor(placedRectangle), 2), placedRectangle);
+				}
+			}
+			return result;
+		}
 
-            var resultDirectory = Path.GetDirectoryName(fileName);
-            if (String.IsNullOrWhiteSpace(resultDirectory))
-            {
-                resultDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "results");
-                fileName = Path.Combine(resultDirectory, "rectangles.png");
-            }
+		public virtual void Save(string fileName)
+		{
+			if (String.IsNullOrWhiteSpace(fileName))
+			{
+				fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultSubdirectory, DefaultFileName);
+			}
 
-            if (!Directory.Exists(resultDirectory))
-            {
-                Directory.CreateDirectory(resultDirectory);
-            }
+			var resultDirectory = Path.GetDirectoryName(fileName);
+			if (String.IsNullOrWhiteSpace(resultDirectory))
+			{
+				resultDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultSubdirectory);
+				fileName = Path.Combine(resultDirectory, DefaultFileName);
+			}
 
-            using (var bitmap = Draw())
-            {
-                bitmap?.Save(fileName);
-            }
-        }
+			if (!Directory.Exists(resultDirectory))
+			{
+				Directory.CreateDirectory(resultDirectory);
+			}
 
-        public CircularCloudLayouter(Point center)
-        {
-            cloudCenter = center;
-        }
-    }
+			using (var bitmap = Draw())
+			{
+				bitmap?.Save(fileName);
+			}
+		}
 
-    [TestFixture]
-    internal class CircularCloudLayouterSould
-    {
-        private CircularCloudLayouter layouter;
-        private List<Rectangle> placedRectangles;
+		public CircularCloudLayouter(Point center)
+		{
+			cloudCenter = center;
+		}
+	}
 
-        private const int TestPoolSize = 500;
-        private const int CloudCenterX = 250;
-        private const int CloudCenterY = 250;
-        private const int MaxWitdh = 200;
-        private const int MaxHeight = 60;
-        private const double CompactFactor = 0.4;
+	[TestFixture]
+	internal class CircularCloudLayouter_Should
+	{
+		private CircularCloudLayouter layouter;
+		private List<Rectangle> placedRectangles;
+		private IEnumerable<Size> sizedRects;
+		private const int TestPoolSize = 150;
+		private const int CloudCenterX = 1920 / 2;
+		private const int CloudCenterY = 1024 / 2;
+		private const int MaxWitdh = 250;
+		private const int MaxHeight = 60;
+		private const int MinWitdh = 50;
+		private const int MinHeight = 30;
+		private const double CompactFactor = 0.5;
 
-        private static IEnumerable<Size> GenerateRectangleSizes(int rectangleCount)
-        {
-            var rectangles = new List<Size>();
-            var randomGenerator = new Random();
-            for (var i = 0; i < rectangleCount; i++)
-            {
-                rectangles.Add(new Size(randomGenerator.Next(MaxWitdh), randomGenerator.Next(MaxHeight)));
-            }
-            return rectangles;
-        }
+		private static IEnumerable<Size> GenerateRectangleSizes(int rectangleCount)
+		{
+			var rectangles = new List<Size>();
+			var randomGenerator = new Random();
+			for (var i = 0; i < rectangleCount; i++)
+			{
+				rectangles.Add(new Size(MinWitdh + randomGenerator.Next(MaxWitdh - MinWitdh), MinHeight + randomGenerator.Next(MaxHeight - MinHeight)));
+			}
+			return rectangles;
+		}
 
-        [SetUp]
-        public void SetUp()
-        {
-            layouter = new CircularCloudLayouter(new Point(CloudCenterX, CloudCenterY));
-            var sizedRects = GenerateRectangleSizes(TestPoolSize);
-            placedRectangles = new List<Rectangle>();
-            foreach (var sizedRect in sizedRects)
-            {
-                placedRectangles.Add(layouter.PutNextRectangle(sizedRect));
-            }
-        }
+		[SetUp]
+		public void SetUp()
+		{
+			layouter = new CircularCloudLayouter(new Point(CloudCenterX, CloudCenterY));
+			sizedRects = GenerateRectangleSizes(TestPoolSize);
+			placedRectangles = new List<Rectangle>();
+		}
 
-        [Test]
-        public void RectanglesHaveNoIntersects()
-        {
-            var hasIntersects = placedRectangles.Any(HasIntersectWithOthers);
-            Assert.AreEqual(false, hasIntersects, "Rectangles have intersects with each others");
-        }
+		[Test]
+		public void RectanglesHaveNoIntersects_Always()
+		{
+			DoLayout();
+			var hasIntersects = placedRectangles.Any(HasIntersectWithOthers);
+			Assert.AreEqual(false, hasIntersects, "Rectangles have intersects with each others");
+		}
 
-        [Test]
-        public void CloudIsCompactEnougth()
-        {
-            var rectanglesCoveredArea = CalculateRectanglesArea(placedRectangles);
-            var circumcircleArea = CalculateСircumcircleArea(placedRectangles);
-            Assert.GreaterOrEqual(rectanglesCoveredArea / circumcircleArea, CompactFactor, "The cloud is not compact enogth");
-        }
+		[Test]
+		public void CompactEnougth_ByDefault()
+		{
+			DoLayout();
+			var rectanglesCoveredArea = CalculateRectanglesArea(placedRectangles);
+			var circumcircleArea = CalculateСircumcircleArea(placedRectangles);
+			CoverageReport(rectanglesCoveredArea, circumcircleArea);
+			Assert.GreaterOrEqual(rectanglesCoveredArea / circumcircleArea, CompactFactor, "The cloud is not compact enogth");
+		}
 
-        [TearDown]
-        public void TearDown()
-        {
-            SaveResults();          
-        }
+		private void CoverageReport(double rectanglesCoveredArea, double circumcircleArea)
+		{
+			TestContext.WriteLine("Rectangles Area: {0}", rectanglesCoveredArea);
+			TestContext.WriteLine("Circle Area: {0}", circumcircleArea);
+			TestContext.WriteLine("\tCircle Radius: {0}", Math.Floor(Math.Sqrt(circumcircleArea / Math.PI)));
+			TestContext.WriteLine("Coverage: {0}", (rectanglesCoveredArea / circumcircleArea).ToString("F"));
+		}
 
-        private void SaveResults()
-        {
-            var dateTimeFormat = "yyyyMMdd_hhmmss";
-            var resultDescription = "other";
-            switch (TestContext.CurrentContext.Result.Outcome.Status)
-            {
-                case TestStatus.Failed:
-                    resultDescription = "failed";
-                    break;
-                case TestStatus.Passed:
-                    resultDescription = "success";
-                    break;
-            }
+		[Test]
+		public void NotSoCompact_WithCompactDisabled()
+		{
+			layouter.CompactRequired = false;
+			layouter.SpiralStepSize = 15;
+			DoLayout();
+			var rectanglesCoveredArea = CalculateRectanglesArea(placedRectangles);
+			var circumcircleArea = CalculateСircumcircleArea(placedRectangles);
+			CoverageReport(rectanglesCoveredArea, circumcircleArea);
+			Assert.LessOrEqual(rectanglesCoveredArea / circumcircleArea, CompactFactor, "The cloud is too compact enogth");
+		}
 
-            layouter.Save(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "results",
-                $"{TestContext.CurrentContext.Test.MethodName}_{resultDescription}_at_{DateTime.Now.ToString(dateTimeFormat)}.png"));
-        }
+		[TearDown]
+		public void TearDown()
+		{
+			SaveResults();
+		}
 
-        private static double CalculateRectanglesArea(List<Rectangle> rectangles)
-        {
-            return rectangles.Select(CalculateRectangleArea).Sum();
-        }
+		private void DoLayout()
+		{
+			foreach (var sizedRect in sizedRects)
+			{
+				placedRectangles.Add(layouter.PutNextRectangle(sizedRect));
+			}
+		}
 
-        private static int CalculateRectangleArea(Rectangle rectangle)
-        {
-            return rectangle.Height * rectangle.Width;
-        }
 
-        private double CalculateСircumcircleArea(List<Rectangle> rectangles)
-        {
-            var сircumcircleRadius = CalculateСircumcircleRadius(rectangles);
-            return сircumcircleRadius * сircumcircleRadius * Math.PI;
-        }
+		private void SaveResults()
+		{
+			const string dateTimeFormat = "yyyyMMdd_hhmmss";
+			const string subDirectory = "results";
 
-        private double CalculateСircumcircleRadius(List<Rectangle> rectangles)
-        {
-            return rectangles.Select(CalculateRadius).Max();
-        }
+			var resultDescription = "other";
 
-        private bool HasIntersectWithOthers(Rectangle currentRectangle)
-        {
-            return placedRectangles.Where(placedRectangle=> placedRectangle!=currentRectangle).Any(placedRectangle => HasIntersectWithOne(currentRectangle, placedRectangle));
-        }
+			switch (TestContext.CurrentContext.Result.Outcome.Status)
+			{
+				case TestStatus.Failed:
+					resultDescription = "failed";
+					break;
+				case TestStatus.Passed:
+					resultDescription = "success";
+					break;
+			}
 
-        private static double CalculateRadius(Rectangle rectangle)
-        {
-            var maxX = Math.Max(Math.Abs(CloudCenterX - rectangle.Left),
-                Math.Abs(CloudCenterX - rectangle.Right));
-            var maxY = Math.Max(Math.Abs(CloudCenterY - rectangle.Top),
-                Math.Abs(CloudCenterY - rectangle.Bottom));
-            return Math.Sqrt(maxX * maxX + maxY * maxY);
-        }
+			layouter.Save(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, subDirectory,
+				$"{TestContext.CurrentContext.Test.MethodName}_{resultDescription}_at_{DateTime.Now.ToString(dateTimeFormat)}.png"));
+		}
 
-        private static bool HasIntersectWithOne(Rectangle currentRectangle, Rectangle checkinRectangle)
-        {
-            return (currentRectangle.Left <= checkinRectangle.Right &&
-                    checkinRectangle.Left <= currentRectangle.Right &&
-                    currentRectangle.Top <= checkinRectangle.Bottom &&
-                    checkinRectangle.Top <= currentRectangle.Bottom);
-        }
+		private static double CalculateRectanglesArea(List<Rectangle> rectangles)
+		{
+			return rectangles.Select(CalculateRectangleArea).Sum();
+		}
 
-       
-    }
+		private static int CalculateRectangleArea(Rectangle rectangle)
+		{
+			return rectangle.Height * rectangle.Width;
+		}
+
+		private double CalculateСircumcircleArea(List<Rectangle> rectangles)
+		{
+			var сircumcircleRadius = CalculateСircumcircleRadius(rectangles);
+			return сircumcircleRadius * сircumcircleRadius * Math.PI;
+		}
+
+		private double CalculateСircumcircleRadius(List<Rectangle> rectangles)
+		{
+			return rectangles.Select(CalculateRadius).Max();
+		}
+
+		private bool HasIntersectWithOthers(Rectangle currentRectangle)
+		{
+			return placedRectangles.Where(placedRectangle => placedRectangle != currentRectangle)
+				.Any(placedRectangle => HasIntersectWithOne(currentRectangle, placedRectangle));
+		}
+
+		private static double CalculateRadius(Rectangle rectangle)
+		{
+			var maxX = Math.Max(Math.Abs(CloudCenterX - rectangle.Left),
+				Math.Abs(CloudCenterX - rectangle.Right));
+			var maxY = Math.Max(Math.Abs(CloudCenterY - rectangle.Top),
+				Math.Abs(CloudCenterY - rectangle.Bottom));
+			return Math.Sqrt(maxX * maxX + maxY * maxY);
+		}
+
+		private static bool HasIntersectWithOne(Rectangle currentRectangle, Rectangle checkinRectangle)
+		{
+			return (currentRectangle.Left <= checkinRectangle.Right &&
+					checkinRectangle.Left <= currentRectangle.Right &&
+					currentRectangle.Top <= checkinRectangle.Bottom &&
+					checkinRectangle.Top <= currentRectangle.Bottom);
+		}
+
+
+	}
 }
