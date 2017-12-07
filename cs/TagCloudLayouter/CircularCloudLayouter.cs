@@ -194,14 +194,6 @@ namespace TagCloudLayouter
 			Assert.GreaterOrEqual(rectanglesCoveredArea / circumcircleArea, CompactFactor, "The cloud is not compact enogth");
 		}
 
-		private void CoverageReport(double rectanglesCoveredArea, double circumcircleArea)
-		{
-			TestContext.WriteLine("Rectangles Area: {0}", rectanglesCoveredArea);
-			TestContext.WriteLine("Circle Area: {0}", circumcircleArea);
-			TestContext.WriteLine("\tCircle Radius: {0}", Math.Floor(Math.Sqrt(circumcircleArea / Math.PI)));
-			TestContext.WriteLine("Coverage: {0}", (rectanglesCoveredArea / circumcircleArea).ToString("F"));
-		}
-
 		[Test]
 		public void NotSoCompact_WithCompactDisabled()
 		{
@@ -218,6 +210,15 @@ namespace TagCloudLayouter
 		public void TearDown()
 		{
 			SaveResults();
+		}
+
+
+		private void CoverageReport(double rectanglesCoveredArea, double circumcircleArea)
+		{
+			TestContext.WriteLine("Rectangles Area:\t{0}", rectanglesCoveredArea.ToString("N"));
+			TestContext.WriteLine("Circle Area:\t\t{0}", circumcircleArea.ToString("N"));
+			TestContext.WriteLine("\tCircle Radius:\t{0}", Math.Floor(Math.Sqrt(circumcircleArea / Math.PI)).ToString("N"));
+			TestContext.WriteLine("Coverage:\t\t\t{0}", (rectanglesCoveredArea / circumcircleArea).ToString("N"));
 		}
 
 		private void DoLayout()
