@@ -78,8 +78,7 @@ namespace TagCloudLayouter
 		{
 			SaveResults();
 		}
-
-
+		
 		private void CoverageReport(double rectanglesCoveredArea, double circumcircleArea)
 		{
 			TestContext.WriteLine("Rectangles Area:\t{0}", rectanglesCoveredArea.ToString("N"));
@@ -95,7 +94,6 @@ namespace TagCloudLayouter
 				placedRectangles.Add(layouter.PutNextRectangle(sizedRect));
 			}
 		}
-
 
 		private void SaveResults()
 		{
