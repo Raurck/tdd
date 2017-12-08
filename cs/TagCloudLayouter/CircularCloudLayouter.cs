@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
-using NUnit.Framework;
-using NUnit.Framework.Interfaces;
 using TagCloudLayouter.Interfaces;
 
 
@@ -21,21 +18,29 @@ namespace TagCloudLayouter
 		public int CanvasHeight { get; set; } = 1024;
 		public double SpiralStepAngleRadians { get; set; } = Math.PI / 25;
 		public int SpiralStepSize { get; set; } = 1;
-		public string DefaultSubdirectory { get; set; } = "results";
-		public string DefaultFileName { get; set; } = "rectangles.png";
 
 		public Rectangle PutNextRectangle(Size rectangleSize)
 		{
 			var resultRectangle = FindRectaglePlace(rectangleSize);
 			if (CompactRequired)
 			{
-				resultRectangle = CompactRegion(resultRectangle);
+				resultRectangle = CompactCloudRegion(resultRectangle);
 			}
 			placedRectangles.Add(resultRectangle);
 			return resultRectangle;
 		}
 
-		protected virtual Rectangle FindRectaglePlace(Size rectangleSize)
+	    public IEnumerable<Rectangle> GetCurrentLayout()
+	    {
+	        return placedRectangles;
+	    }
+
+	    public Point GetCloudCenter()
+	    {
+	        return cloudCenter;
+	    }
+
+        protected virtual Rectangle FindRectaglePlace(Size rectangleSize)
 		{
 			var startX = cloudCenter.X - rectangleSize.Width / 2;
 			var startY = cloudCenter.Y - rectangleSize.Height / 2;
@@ -54,7 +59,7 @@ namespace TagCloudLayouter
 			return currentRectangle;
 		}
 
-		protected virtual Rectangle CompactRegion(Rectangle currentRectangle)
+		protected virtual Rectangle CompactCloudRegion(Rectangle currentRectangle)
 		{
 			var deltaX = currentRectangle.X + currentRectangle.Width / 2 > cloudCenter.X ? -1 : 1;
 			var deltaY = currentRectangle.Y + currentRectangle.Height / 2 > cloudCenter.Y ? -1 : 1;
@@ -79,7 +84,7 @@ namespace TagCloudLayouter
 
 			if (currentRectangle.X != startX || currentRectangle.Y != startY)
 			{
-				currentRectangle = CompactRegion(currentRectangle);
+				currentRectangle = CompactCloudRegion(currentRectangle);
 			}
 			return currentRectangle;
 		}
@@ -95,45 +100,6 @@ namespace TagCloudLayouter
 					checkedRectangle.Left <= currentRectangle.Right &&
 					currentRectangle.Top <= checkedRectangle.Bottom &&
 					checkedRectangle.Top <= currentRectangle.Bottom);
-		}
-
-		protected Bitmap Draw()
-		{
-			var rectangleColorProvider = new RectangleColorProvider(placedRectangles);
-			var result = new Bitmap(CanvasWidth, CanvasHeight);
-			using (var canvas = Graphics.FromImage(result))
-			{
-				foreach (var placedRectangle in placedRectangles)
-				{
-					canvas.DrawRectangle(new Pen(rectangleColorProvider.GetRectangleColor(placedRectangle), 2), placedRectangle);
-				}
-			}
-			return result;
-		}
-
-		public virtual void Save(string fileName)
-		{
-			if (String.IsNullOrWhiteSpace(fileName))
-			{
-				fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultSubdirectory, DefaultFileName);
-			}
-
-			var resultDirectory = Path.GetDirectoryName(fileName);
-			if (String.IsNullOrWhiteSpace(resultDirectory))
-			{
-				resultDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultSubdirectory);
-				fileName = Path.Combine(resultDirectory, DefaultFileName);
-			}
-
-			if (!Directory.Exists(resultDirectory))
-			{
-				Directory.CreateDirectory(resultDirectory);
-			}
-
-			using (var bitmap = Draw())
-			{
-				bitmap?.Save(fileName);
-			}
 		}
 
 		public CircularCloudLayouter(Point center)
