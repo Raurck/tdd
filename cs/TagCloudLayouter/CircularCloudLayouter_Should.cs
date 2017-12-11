@@ -24,9 +24,15 @@ namespace TagCloudLayouter
         private int minHeight = 30;
         private double compactFactor = 0.5;
 
-        private IEnumerable<Size> GenerateRectangleSizes(int rectangleCount)
+        private IEnumerable<Size> GenerateRectangleSizes(int rectangleCount, List<Tuple<int,int>> rectanglesList )
         {
+            if (rectanglesList != null)
+            {
+                return rectanglesList.Select(element => new Size(element.Item1, element.Item2));
+            }
+
             var rectangles = new List<Size>();
+
             var randomGenerator = new Random();
             for (var i = 0; i < rectangleCount; i++)
             {
@@ -41,7 +47,7 @@ namespace TagCloudLayouter
             placedRectangles = new List<Rectangle>();
         }
 
-        private void ParametrizeLayouter(int centerPointX, int centerPointY, int minRectangleSizeWidth, int minRectangleSizeHeight, int maxRectangleSizeWidth, int maxRectangleSizeHeight, double compactRelation, int rectanglesCount)
+        private void ParametrizeLayouter(int centerPointX, int centerPointY, int minRectangleSizeWidth, int minRectangleSizeHeight, int maxRectangleSizeWidth, int maxRectangleSizeHeight, double compactRelation, int rectanglesCount, List<Tuple<int, int>> rectanglesLis)
         {
             cloudCenterX = centerPointX;
             cloudCenterY = centerPointY;
@@ -54,14 +60,60 @@ namespace TagCloudLayouter
             compactFactor = compactRelation;
             testPoolSize = rectanglesCount;
             layouter = new CircularCloudLayouter(new Point(cloudCenterX, cloudCenterY));
-            sizedRects = GenerateRectangleSizes(testPoolSize);
+            sizedRects = GenerateRectangleSizes(testPoolSize, rectanglesLis);
+        }
+
+        private static object[] TestCases =
+        {
+            new object[]
+            {
+                1920, 1024, 
+                new List<Tuple<int, int>> {new Tuple<int, int>(250, 80), new Tuple<int, int>(120, 70), new Tuple<int, int>(120, 70), new Tuple<int, int>(120, 60), new Tuple<int, int>(250, 60)}
+            },
+            new object[]
+            {
+                1920, 1024, 
+                new List<Tuple<int, int>> {new Tuple<int, int>(250, 80), new Tuple<int, int>(120, 70), new Tuple<int, int>(120, 70), new Tuple<int, int>(120, 60), new Tuple<int, int>(250, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60) }
+            },
+            new object[]
+            {
+                1920, 1024,
+                new List<Tuple<int, int>>
+                {
+                    new Tuple<int, int>(250, 80), new Tuple<int, int>(120, 70), new Tuple<int, int>(120, 70), new Tuple<int, int>(120, 60), new Tuple<int, int>(250, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(20, 60), new Tuple<int, int>(30, 20)
+                    , new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20), new Tuple<int, int>(30, 20)
+                }
+            }
+
+        };
+        [Test, TestCaseSource(nameof(TestCases))]
+        public void CloudIsShrinking_Always(int centerPointX, int centerPointY, List<Tuple<int, int>> sizeList)
+        {
+            
+            ParametrizeLayouter(centerPointX, centerPointY, 0, 0, 0, 0, 0, 0,  sizeList);
+            layouter.CompactRequired = false;
+            DoLayout();
+            var circumcircleArea = CalculateСircumcircleArea(layouter.GetCurrentLayout().ToList());
+            SaveResults();
+
+            ParametrizeLayouter(centerPointX, centerPointY, 0, 0, 0, 0, 0, 0,  sizeList);
+            layouter.CompactRequired = true;
+            DoLayout();
+            var circumcircleAreaAfterShrink = CalculateСircumcircleArea(layouter.GetCurrentLayout().ToList());
+            SaveResults();
+
+            TestContext.WriteLine("Circle Area:\t\t{0}", circumcircleArea.ToString("N"));
+            TestContext.WriteLine("\tCircle Radius:\t{0}", Math.Floor(Math.Sqrt(circumcircleArea / Math.PI)).ToString("N"));
+            TestContext.WriteLine("Circle Area:\t\t{0}", circumcircleAreaAfterShrink.ToString("N"));
+            TestContext.WriteLine("\tCircle Radius:\t{0}", Math.Floor(Math.Sqrt(circumcircleAreaAfterShrink / Math.PI)).ToString("N"));
+            (circumcircleArea / circumcircleAreaAfterShrink).Should().BeGreaterThan(1);
         }
 
         [TestCase(1920, 1024, 50, 30, 250, 80, 0.5, 120, ExpectedResult = false)]
         [TestCase(1920, 1024, 20, 20, 20, 20, 0.6, 250, ExpectedResult = false)]
         public bool RectanglesHaveNoIntersects_Always(int centerPointX, int centerPointY, int minRectangleSizeWidth, int minRectangleSizeHeight, int maxRectangleSizeWidth, int maxRectangleSizeHeight, double compactRelation, int rectanglesCount)
         {
-            ParametrizeLayouter(centerPointX, centerPointY, minRectangleSizeWidth, minRectangleSizeHeight, maxRectangleSizeWidth, maxRectangleSizeHeight, compactRelation, rectanglesCount);
+            ParametrizeLayouter(centerPointX, centerPointY, minRectangleSizeWidth, minRectangleSizeHeight, maxRectangleSizeWidth, maxRectangleSizeHeight, compactRelation, rectanglesCount,null);
             DoLayout();
             var hasIntersects = placedRectangles.Any(HasIntersectWithOthers);
             return hasIntersects;
@@ -74,9 +126,10 @@ namespace TagCloudLayouter
         [TestCase(1920, 1024, 20, 20, 20, 20, 0.6, 250, 10, 0.314, false, ExpectedResult = false)]
         [TestCase(1920, 1024, 20, 20, 20, 20, 0.6, 250, 15, 0.314, false, ExpectedResult = false)]
         [TestCase(1920, 1024, 20, 20, 20, 20, 0.6, 250, 5, 1.314, false, ExpectedResult = false)]
+        [TestCase(1920, 1024, 20, 20, 500, 70, 0.6, 500, 4, 0.314, true, ExpectedResult = false)]
         public bool Compact(int centerPointX, int centerPointY, int minRectangleSizeWidth, int minRectangleSizeHeight, int maxRectangleSizeWidth, int maxRectangleSizeHeight, double compactRelation, int rectanglesCount, int spiralStep = 15, double spiralAngleStep = 0.314, bool doCompact = true)
         {
-            ParametrizeLayouter(centerPointX, centerPointY, minRectangleSizeWidth, minRectangleSizeHeight, maxRectangleSizeWidth, maxRectangleSizeHeight, compactRelation, rectanglesCount);
+            ParametrizeLayouter(centerPointX, centerPointY, minRectangleSizeWidth, minRectangleSizeHeight, maxRectangleSizeWidth, maxRectangleSizeHeight, compactRelation, rectanglesCount, null);
             layouter.CompactRequired = doCompact;
             layouter.SpiralStepSize = spiralStep;
             layouter.SpiralStepAngleRadians = spiralAngleStep;
@@ -95,7 +148,7 @@ namespace TagCloudLayouter
         }
 
 
-        private void CoverageReport(double rectanglesCoveredArea, double circumcircleArea)
+        private static void CoverageReport(double rectanglesCoveredArea, double circumcircleArea)
         {
             TestContext.WriteLine("Rectangles Area:\t{0}", rectanglesCoveredArea.ToString("N"));
             TestContext.WriteLine("Circle Area:\t\t{0}", circumcircleArea.ToString("N"));
