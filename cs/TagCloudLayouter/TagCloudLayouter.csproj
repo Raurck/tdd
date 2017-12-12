@@ -64,14 +64,14 @@
     <Compile Include="ExtendedCloudPresenter.cs" />
     <Compile Include="Interfaces\ICloudLayouter.cs" />
     <Compile Include="Interfaces\ITextFileReader.cs" />
-    <Compile Include="Interfaces\IWordPreprocessor.cs" />
+    <Compile Include="Interfaces\ITagCloudTextPreprocessor.cs" />
     <Compile Include="Interfaces\IWordRectangleGenerator.cs" />
     <Compile Include="Interfaces\IWordTransformer.cs" />
-    <Compile Include="Interfaces\SimpleWordTransformer.cs" />
+    <Compile Include="SimpleWordTransformer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RectangleColorProvider.cs" />
     <Compile Include="SimpleTextFileReader.cs" />
-    <Compile Include="SimpleWordPreprocessor.cs" />
+    <Compile Include="SimplePreprocessor.cs" />
     <Compile Include="TagCloudFontProvider.cs" />
     <Compile Include="TagCloudFontProvider_Should.cs" />
     <Compile Include="TagCloudPresenter.cs" />
@@ -79,6 +79,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="boring.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
