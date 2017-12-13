@@ -8,7 +8,7 @@ namespace TagCloudLayouter
     {
         private readonly IWordTransformer wordTransformer;
         private readonly int tagCloudWordAmount;
-        private IEnumerable<char> wordSplitters = new[] { ' ', ',', '.', ';', ':', '\'', '-', '\n', ' ' };
+        private IEnumerable<char> wordSplitters = new[] { ' ', ',', '.', ';', ':', '\'', '-', '\n', ' ','’', '”','“', '—' };
 
         public SimplePreprocessor(
             IWordTransformer wordTransformer,
@@ -23,8 +23,9 @@ namespace TagCloudLayouter
         public IEnumerable<KeyValuePair<string, int>> ProcessStrings(string[] text)
         {
             return text
+
                      .SelectMany(str => str.Split(wordSplitters.ToArray()))
-                     .Select(w => wordTransformer.GetTransformedWord(w.ToLower()))
+                     .Select(w => wordTransformer.GetTransformedWord(w))
                      .Where(w => !string.IsNullOrWhiteSpace(w))
                      .GroupBy(w => w)
                      .ToDictionary(w => w.Key, w => w.Count())

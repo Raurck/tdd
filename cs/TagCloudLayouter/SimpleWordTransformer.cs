@@ -17,7 +17,7 @@ namespace TagCloudLayouter
 
         public string GetTransformedWord(string word)
         {
-            return boringWords.Any(boringWord => boringWord == word.ToLower()) ? string.Empty : word;
+            return boringWords.Any(boringWord => boringWord == word.ToLower()) ? string.Empty : word.ToLower();
         }
     }
 }
