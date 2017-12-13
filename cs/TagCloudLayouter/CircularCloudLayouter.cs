@@ -84,15 +84,27 @@ namespace TagCloudLayouter
                 currentRectangle.X = (int)Math.Ceiling(startX + nextX);
                 currentRectangle.Y = (int)Math.Ceiling(startY + nextY);
             }
+           
+            return currentRectangle;
+        }
 
-
+        protected virtual Rectangle SeekBetterPlace(Rectangle currentRectangle)
+        {
+            
             var bestPlace = new Tuple<int, int, double>(currentRectangle.X, currentRectangle.Y, GetCircumcircleRadiusFromLayoutCenterToRectangle(currentRectangle));
             var maxRadius = Math.Max(CicumcircleRadius, bestPlace.Item3);
+            var spiralRadius = GetDistance(cloudCenter, new Point(currentRectangle.Left, currentRectangle.Top));
+            var spiralAngleInRadian = 0d;
+            var startX = cloudCenter.X - currentRectangle.Width / 2;
+            var startY = cloudCenter.Y - currentRectangle.Height / 2;
+            var localSpiralStepAngleRadians = Math.PI / 10;
+            var localSpiralStepSize = (maxRadius - spiralRadius) / 10;
+            var startRadius = spiralRadius;
 
             while (spiralRadius < maxRadius)
             {
-                spiralAngleInRadian += SpiralStepAngleRadians;
-                spiralRadius = SpiralStepSize * spiralAngleInRadian;
+                spiralAngleInRadian += localSpiralStepAngleRadians;
+                spiralRadius = startRadius + localSpiralStepSize * spiralAngleInRadian;
                 var nextX = spiralRadius * Math.Cos(spiralAngleInRadian);
                 var nextY = spiralRadius * Math.Sin(spiralAngleInRadian);
                 currentRectangle.X = (int)Math.Ceiling(startX + nextX);
@@ -110,7 +122,7 @@ namespace TagCloudLayouter
             return currentRectangle;
         }
 
-        protected virtual Rectangle CompactCloudRegion(Rectangle currentRectangle)
+        protected virtual Rectangle TightenCloudRegion(Rectangle currentRectangle)
         {
             var deltaX = currentRectangle.X + currentRectangle.Width / 2 > cloudCenter.X ? -1 : 1;
             var deltaY = currentRectangle.Y + currentRectangle.Height / 2 > cloudCenter.Y ? -1 : 1;
@@ -135,8 +147,15 @@ namespace TagCloudLayouter
 
             if (currentRectangle.X != startX || currentRectangle.Y != startY)
             {
-                currentRectangle = CompactCloudRegion(currentRectangle);
+                currentRectangle = TightenCloudRegion(currentRectangle);
             }
+            return currentRectangle;
+        }
+
+        protected virtual Rectangle CompactCloudRegion(Rectangle currentRectangle)
+        {
+            currentRectangle = SeekBetterPlace(currentRectangle);
+            currentRectangle = TightenCloudRegion(currentRectangle);
             return currentRectangle;
         }
 
@@ -147,10 +166,12 @@ namespace TagCloudLayouter
 
         protected static bool HasIntersectWithOne(Rectangle currentRectangle, Rectangle checkedRectangle)
         {
-            return (currentRectangle.Left <= checkedRectangle.Right &&
+           /* return (currentRectangle.Left <= checkedRectangle.Right &&
                     checkedRectangle.Left <= currentRectangle.Right &&
                     currentRectangle.Top <= checkedRectangle.Bottom &&
-                    checkedRectangle.Top <= currentRectangle.Bottom);
+                    checkedRectangle.Top <= currentRectangle.Bottom);*/
+            currentRectangle.Inflate(1, 1);
+            return currentRectangle.IntersectsWith(checkedRectangle);
         }
 
         public CircularCloudLayouter(Point center)
