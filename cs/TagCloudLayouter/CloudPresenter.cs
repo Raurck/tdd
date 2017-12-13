@@ -33,6 +33,9 @@ namespace TagCloudLayouter
 
         protected string GetRealFileName(string fileName)
         {
+            const string dateTimeFormat = "yyyyMMdd_hhmmss";
+            var currentDateTime = DateTime.Now.ToString(dateTimeFormat);
+
             if (String.IsNullOrWhiteSpace(fileName))
             {
                 fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultSubdirectory, DefaultFileName);
@@ -54,7 +57,7 @@ namespace TagCloudLayouter
             {
                 var namePart = Path.GetFileNameWithoutExtension(fileName);
                 var extensionPart = Path.GetExtension(fileName);
-                fileName = Path.Combine(resultDirectory, $"{namePart}_{DateTime.Now.Millisecond}{extensionPart}");
+                fileName = Path.Combine(resultDirectory, $"{namePart}_{currentDateTime}{DateTime.Now.Millisecond}{extensionPart}");
             }
 
             return fileName;
