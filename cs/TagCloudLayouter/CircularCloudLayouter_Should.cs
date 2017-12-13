@@ -18,6 +18,7 @@ namespace TagCloudLayouter
         private int cloudCenterX = 1920 / 2;
         private int cloudCenterY = 1024 / 2;
         private bool withTearDown = true;
+
         [SetUp]
         public void SetUp()
         {
@@ -28,12 +29,13 @@ namespace TagCloudLayouter
         [Test]
         public void CloudLayoutShouldFail_WithEmptyRect()
         {
+            withTearDown = false;
             layouter = new CircularCloudLayouter(new Point(cloudCenterX, cloudCenterY));
-            Action act = ()=>
-            
+
+            Action act = () =>
                 layouter.PutNextRectangle(new Size());
-            
-            act().ShouldThrow<ArgumentException>();
+
+            act.ShouldThrow<ArgumentException>();
         }
 
         [TestCaseSource(nameof(_testCases))]
@@ -59,13 +61,13 @@ namespace TagCloudLayouter
             TestContext.WriteLine("\tCCircle Radius:\t{0}", Math.Floor(Math.Sqrt(circumcircleAreaAfterShrink / Math.PI)).ToString("N"));
             TestContext.WriteLine("Uncompacted to compacted area:\t{0}", (circumcircleArea / circumcircleAreaAfterShrink).ToString("N"));
             (circumcircleArea / circumcircleAreaAfterShrink).Should().BeGreaterThan(1);
-            
+
         }
 
         [TestCase(1920, 1024)]
         public void CloudLayouterIsPlacingRectangles(int centerPointX, int centerPointY)
         {
-            ParametrizeLayouter(centerPointX, centerPointY, new []{new Size(50,70),new Size(50,70),new Size(50,70), new Size(50, 70), new Size(50, 70) });
+            ParametrizeLayouter(centerPointX, centerPointY, new[] { new Size(50, 70), new Size(50, 70), new Size(50, 70), new Size(50, 70), new Size(50, 70) });
             DoLayout();
             placedRectangles.Count(r => placedRectangles.Count(r2 =>
                                             r.Left == r2.Left && r.Right == r2.Right && r.Top == r2.Top &&
@@ -174,13 +176,13 @@ namespace TagCloudLayouter
                 },
                 0
             },
-            new object[]{1920, 1024, null,10},
-            new object[]{1920, 1024, null,50},
-            new object[]{1920, 1024, null,70},
-            new object[]{1920, 1024, null,90},
-            new object[]{1920, 1024, null,100},
-            new object[]{1920, 1024, null,250},
-            new object[]{1920, 1024, null,300}
+            new object[]{1920, 1024, null, 10},
+            new object[]{1920, 1024, null, 50},
+            new object[]{1920, 1024, null, 70},
+            new object[]{1920, 1024, null, 90},
+            new object[]{1920, 1024, null, 100},
+            new object[]{1920, 1024, null, 250},
+            new object[]{1920, 1024, null, 300}
         };
 
 
@@ -204,15 +206,15 @@ namespace TagCloudLayouter
         private string GetFileNamePrefix()
         {
             var resultDescription = "other";
-                switch (TestContext.CurrentContext.Result.Outcome.Status)
-                {
-                    case TestStatus.Failed:
-                        resultDescription = "failed";
-                        break;
-                    case TestStatus.Passed:
-                        resultDescription = "success";
-                        break;
-                }
+            switch (TestContext.CurrentContext.Result.Outcome.Status)
+            {
+                case TestStatus.Failed:
+                    resultDescription = "failed";
+                    break;
+                case TestStatus.Passed:
+                    resultDescription = "success";
+                    break;
+            }
             return $"{TestContext.CurrentContext.Test.MethodName}_{resultDescription}";
         }
 
@@ -262,7 +264,8 @@ namespace TagCloudLayouter
 
         private bool HasIntersectWithOthers(Rectangle currentRectangle)
         {
-            return placedRectangles.Where(placedRectangle => placedRectangle != currentRectangle)
+            return placedRectangles
+                .Where(placedRectangle => placedRectangle != currentRectangle)
                 .Any(placedRectangle => HasIntersectWithOne(currentRectangle, placedRectangle));
         }
 

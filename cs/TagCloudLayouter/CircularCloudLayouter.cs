@@ -19,6 +19,8 @@ namespace TagCloudLayouter
         public double SpiralStepAngleRadians { get; set; } = Math.PI / 25;
         public int SpiralStepSize { get; set; } = 1;
 
+        public double CicumcircleRadius { get; private set; } = 0;
+
         public Rectangle PutNextRectangle(Size rectangleSize)
         {
             if (rectangleSize.Height == 0 || rectangleSize.Width == 0)
@@ -31,7 +33,12 @@ namespace TagCloudLayouter
             {
                 resultRectangle = CompactCloudRegion(resultRectangle);
             }
+
             placedRectangles.Add(resultRectangle);
+
+            CicumcircleRadius = Math.Max(CicumcircleRadius,
+                GetCircumcircleRadiusFromLayoutCenterToRectangle(resultRectangle));
+
             return resultRectangle;
         }
 
@@ -45,22 +52,61 @@ namespace TagCloudLayouter
             return cloudCenter;
         }
 
+        private double GetDistance(Point pointA, Point pointB)
+        {
+            return Math.Sqrt(Math.Pow(pointA.Y - pointB.Y, 2) + Math.Pow(pointA.X - pointB.X, 2));
+        }
+
+        private double GetCircumcircleRadiusFromLayoutCenterToRectangle(Rectangle rectangle)
+        {
+            var radius = new double[4];
+            radius[0] = GetDistance(cloudCenter, new Point(rectangle.Left, rectangle.Top));
+            radius[1] = GetDistance(cloudCenter, new Point(rectangle.Left, rectangle.Bottom));
+            radius[2] = GetDistance(cloudCenter, new Point(rectangle.Right, rectangle.Top));
+            radius[3] = GetDistance(cloudCenter, new Point(rectangle.Right, rectangle.Bottom));
+            return radius.Max();
+        }
+
         protected virtual Rectangle FindRectaglePlace(Size rectangleSize)
         {
             var startX = cloudCenter.X - rectangleSize.Width / 2;
             var startY = cloudCenter.Y - rectangleSize.Height / 2;
             var currentRectangle = new Rectangle(new Point(startX, startY), rectangleSize);
             double spiralAngleInRadian = 0;
+            var spiralRadius = 0d;
 
             while (HasIntersectWithOthers(currentRectangle))
             {
                 spiralAngleInRadian += SpiralStepAngleRadians;
-                var spiralRadius = SpiralStepSize * spiralAngleInRadian;
+                spiralRadius = SpiralStepSize * spiralAngleInRadian;
                 var nextX = spiralRadius * Math.Cos(spiralAngleInRadian);
                 var nextY = spiralRadius * Math.Sin(spiralAngleInRadian);
                 currentRectangle.X = (int)Math.Ceiling(startX + nextX);
                 currentRectangle.Y = (int)Math.Ceiling(startY + nextY);
             }
+
+
+            var bestPlace = new Tuple<int, int, double>(currentRectangle.X, currentRectangle.Y, GetCircumcircleRadiusFromLayoutCenterToRectangle(currentRectangle));
+            var maxRadius = Math.Max(CicumcircleRadius, bestPlace.Item3);
+
+            while (spiralRadius < maxRadius)
+            {
+                spiralAngleInRadian += SpiralStepAngleRadians;
+                spiralRadius = SpiralStepSize * spiralAngleInRadian;
+                var nextX = spiralRadius * Math.Cos(spiralAngleInRadian);
+                var nextY = spiralRadius * Math.Sin(spiralAngleInRadian);
+                currentRectangle.X = (int)Math.Ceiling(startX + nextX);
+                currentRectangle.Y = (int)Math.Ceiling(startY + nextY);
+                if (!HasIntersectWithOthers(currentRectangle) && GetCircumcircleRadiusFromLayoutCenterToRectangle(currentRectangle) < bestPlace.Item3)
+                {
+                    bestPlace = new Tuple<int, int, double>(currentRectangle.X, currentRectangle.Y,
+                        GetCircumcircleRadiusFromLayoutCenterToRectangle(currentRectangle));
+                }
+
+            }
+
+            currentRectangle.X = bestPlace.Item1;
+            currentRectangle.Y = bestPlace.Item2;
             return currentRectangle;
         }
 
