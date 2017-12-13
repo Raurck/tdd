@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using FluentAssertions;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
@@ -16,102 +17,49 @@ namespace TagCloudLayouter
         private IEnumerable<Size> sizedRects;
         private int cloudCenterX = 1920 / 2;
         private int cloudCenterY = 1024 / 2;
-
+        private bool withTearDown = true;
         [SetUp]
         public void SetUp()
         {
             placedRectangles = new List<Rectangle>();
+            withTearDown = true;
         }
 
-        private static IEnumerable<Size> GenerateRectangleSizes(int rectangleCount, int minRectangleWidth = 50, int minRectangleHeight = 25, int maxRectangleWidth = 300, int maxRectangleHeight = 90)
+        [Test]
+        public void CloudLayoutShouldFail_WithEmptyRect()
         {
-            var rectangles = new List<Size>();
-
-            var randomGenerator = new Random();
-            for (var i = 0; i < rectangleCount; i++)
-            {
-                rectangles.Add(new Size(minRectangleWidth + randomGenerator.Next(maxRectangleWidth - minRectangleWidth), minRectangleHeight + randomGenerator.Next(maxRectangleHeight - minRectangleHeight)));
-            }
-            return rectangles;
-        }
-
-        private void ParametrizeLayouter(int centerPointX, int centerPointY, IEnumerable<Size> rectanglesLis, int rectanglesCount = 200, int minRectangleSizeWidth = 50, int minRectangleSizeHeight = 25, int maxRectangleSizeWidth = 300, int maxRectangleSizeHeight = 90)
-        {
-            cloudCenterX = centerPointX;
-            cloudCenterY = centerPointY;
-
             layouter = new CircularCloudLayouter(new Point(cloudCenterX, cloudCenterY));
-            sizedRects = rectanglesLis ?? GenerateRectangleSizes(rectanglesCount, minRectangleSizeWidth, minRectangleSizeHeight, maxRectangleSizeWidth, maxRectangleSizeHeight);
+            Action act = ()=>
+            
+                layouter.PutNextRectangle(new Size());
+            
+            act().ShouldThrow<ArgumentException>();
         }
 
-        private static object[] _testCases =
+        [TestCaseSource(nameof(_testCases))]
+        public void CloudLayoutIsShrinking_WithCompactRequired(int centerPointX, int centerPointY, List<Size> sizeList, int rectanglesCount = 0)
         {
-            new object[]
-            {
-                1920, 1024,
-                new List<Size>
-                {
-                    new Size(500,90),
-                    new Size(169,80),
-                    new Size(285,80),
-                    new Size(185,80),
-                    new Size(400,80),
-                    new Size(250,75),
-                    new Size(180,75),
-                    new Size(310,75),
-                    new Size(201,75),
-                    new Size(220,75),
-                    new Size(250,75),
-                    new Size(186,60),
-                    new Size(178,60),
-                    new Size(135,60),
-                    new Size(150,60),
-                    new Size(140,60),
-                    new Size(190,60),
-                    new Size(175,60),
-                    new Size(155,50),
-                    new Size(143,50),
-                    new Size(122,50),
-                    new Size(100,50),
-                    new Size(98,50),
-                    new Size(147,50),
-                    new Size(115,50),
-                    new Size(123,50),
-                    new Size(200,50),
-                    new Size(135,50),
-                    new Size(141,50)
-                }
-            },
-            new object[]{1920, 1024, null},
-            new object[]{1920, 1024, null},
-            new object[]{1920, 1024, null},
-            new object[]{1920, 1024, null},
-            new object[]{1920, 1024, null},
-            new object[]{1920, 1024, null},
-            new object[]{1920, 1024, null}
-        };
-
-        [Test, TestCaseSource(nameof(_testCases))]
-        public void CloudLayoutIsShrinking_WithCompactRequired(int centerPointX, int centerPointY, List<Size> sizeList)
-        {
-            sizeList = sizeList ?? GenerateRectangleSizes(250).ToList();
+            withTearDown = false;
+            sizeList = sizeList ?? GenerateRectangleSizes(rectanglesCount).ToList();
             ParametrizeLayouter(centerPointX, centerPointY, sizeList);
             layouter.CompactRequired = false;
             DoLayout();
             var circumcircleArea = CalculateСircumcircleArea(layouter.GetCurrentLayout().ToList());
-            SaveResults();
+            SaveResults($"CloudLayoutIsShrinking_WithCompactRequired_{sizeList.Count}_CaseOff");
 
             ParametrizeLayouter(centerPointX, centerPointY, sizeList);
             layouter.CompactRequired = true;
             DoLayout();
             var circumcircleAreaAfterShrink = CalculateСircumcircleArea(layouter.GetCurrentLayout().ToList());
-            SaveResults();
+            SaveResults($"CloudLayoutIsShrinking_WithCompactRequired_{sizeList.Count}_CaseOn");
 
-            TestContext.WriteLine("Circle Area:\t\t{0}", circumcircleArea.ToString("N"));
-            TestContext.WriteLine("\tCircle Radius:\t{0}", Math.Floor(Math.Sqrt(circumcircleArea / Math.PI)).ToString("N"));
-            TestContext.WriteLine("Circle Area:\t\t{0}", circumcircleAreaAfterShrink.ToString("N"));
-            TestContext.WriteLine("\tCircle Radius:\t{0}", Math.Floor(Math.Sqrt(circumcircleAreaAfterShrink / Math.PI)).ToString("N"));
+            TestContext.WriteLine("Uncompacted circle area:\t\t{0}", circumcircleArea.ToString("N"));
+            TestContext.WriteLine("\tUCircle Radius:\t{0}", Math.Floor(Math.Sqrt(circumcircleArea / Math.PI)).ToString("N"));
+            TestContext.WriteLine("Compacted circle area:\t\t{0}", circumcircleAreaAfterShrink.ToString("N"));
+            TestContext.WriteLine("\tCCircle Radius:\t{0}", Math.Floor(Math.Sqrt(circumcircleAreaAfterShrink / Math.PI)).ToString("N"));
+            TestContext.WriteLine("Uncompacted to compacted area:\t{0}", (circumcircleArea / circumcircleAreaAfterShrink).ToString("N"));
             (circumcircleArea / circumcircleAreaAfterShrink).Should().BeGreaterThan(1);
+            
         }
 
         [TestCase(1920, 1024)]
@@ -158,8 +106,83 @@ namespace TagCloudLayouter
         [TearDown]
         public void TearDown()
         {
-            SaveResults();
+            if (withTearDown)
+            {
+                SaveResults();
+            }
         }
+
+
+        private static IEnumerable<Size> GenerateRectangleSizes(int rectangleCount, int minRectangleWidth = 50, int minRectangleHeight = 25, int maxRectangleWidth = 300, int maxRectangleHeight = 90)
+        {
+            var rectangles = new List<Size>();
+
+            var randomGenerator = new Random();
+            for (var i = 0; i < rectangleCount; i++)
+            {
+                rectangles.Add(new Size(minRectangleWidth + randomGenerator.Next(maxRectangleWidth - minRectangleWidth), minRectangleHeight + randomGenerator.Next(maxRectangleHeight - minRectangleHeight)));
+            }
+            return rectangles;
+        }
+
+        private void ParametrizeLayouter(int centerPointX, int centerPointY, IEnumerable<Size> rectanglesLis, int rectanglesCount = 200, int minRectangleSizeWidth = 50, int minRectangleSizeHeight = 25, int maxRectangleSizeWidth = 300, int maxRectangleSizeHeight = 90)
+        {
+            cloudCenterX = centerPointX;
+            cloudCenterY = centerPointY;
+
+            layouter = new CircularCloudLayouter(new Point(cloudCenterX, cloudCenterY));
+            sizedRects = rectanglesLis ?? GenerateRectangleSizes(rectanglesCount, minRectangleSizeWidth, minRectangleSizeHeight, maxRectangleSizeWidth, maxRectangleSizeHeight);
+        }
+
+        private static object[] _testCases =
+        {
+            new object[]
+            {
+                1920,
+                1024,
+                new List<Size>
+                {
+                    new Size(500,90),
+                    new Size(169,80),
+                    new Size(285,80),
+                    new Size(185,80),
+                    new Size(400,80),
+                    new Size(250,75),
+                    new Size(180,75),
+                    new Size(310,75),
+                    new Size(201,75),
+                    new Size(220,75),
+                    new Size(250,75),
+                    new Size(186,60),
+                    new Size(178,60),
+                    new Size(135,60),
+                    new Size(150,60),
+                    new Size(140,60),
+                    new Size(190,60),
+                    new Size(175,60),
+                    new Size(155,50),
+                    new Size(143,50),
+                    new Size(122,50),
+                    new Size(100,50),
+                    new Size(98,50),
+                    new Size(147,50),
+                    new Size(115,50),
+                    new Size(123,50),
+                    new Size(200,50),
+                    new Size(135,50),
+                    new Size(141,50)
+                },
+                0
+            },
+            new object[]{1920, 1024, null,10},
+            new object[]{1920, 1024, null,50},
+            new object[]{1920, 1024, null,70},
+            new object[]{1920, 1024, null,90},
+            new object[]{1920, 1024, null,100},
+            new object[]{1920, 1024, null,250},
+            new object[]{1920, 1024, null,300}
+        };
+
 
         private static void CoverageReport(double rectanglesCoveredArea, double circumcircleArea)
         {
@@ -177,28 +200,43 @@ namespace TagCloudLayouter
             }
         }
 
-        private void SaveResults()
+
+        private string GetFileNamePrefix()
+        {
+            var resultDescription = "other";
+                switch (TestContext.CurrentContext.Result.Outcome.Status)
+                {
+                    case TestStatus.Failed:
+                        resultDescription = "failed";
+                        break;
+                    case TestStatus.Passed:
+                        resultDescription = "success";
+                        break;
+                }
+            return $"{TestContext.CurrentContext.Test.MethodName}_{resultDescription}";
+        }
+
+        private string GenerateFileName(string nameTemplate = null)
         {
             const string dateTimeFormat = "yyyyMMdd_hhmmss";
             const string subDirectory = "results";
-
-            var resultDescription = "other";
-
-            switch (TestContext.CurrentContext.Result.Outcome.Status)
-            {
-                case TestStatus.Failed:
-                    resultDescription = "failed";
-                    break;
-                case TestStatus.Passed:
-                    resultDescription = "success";
-                    break;
-            }
             var testDateTime = DateTime.Now.ToString(dateTimeFormat);
-            var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, subDirectory,
-                $"{TestContext.CurrentContext.Test.MethodName}_{resultDescription}_at_{testDateTime}_{DateTime.Now.Millisecond}.png");
+            var suffix = $"at_{testDateTime}_{DateTime.Now.Millisecond}";
+
+            if (string.IsNullOrWhiteSpace(nameTemplate))
+            {
+                nameTemplate = GetFileNamePrefix();
+            }
+
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, subDirectory, $"{nameTemplate}_{suffix}.png");
+        }
+
+
+        private void SaveResults(string nameTemplate = null)
+        {
+            var fileName = GenerateFileName(nameTemplate);
             var presenter = new ExtendedCloudPresenter(1920 * 2, 1024 * 2);
             presenter.PresentCloudToFile(layouter, fileName);
-
         }
 
         private static double CalculateRectanglesArea(IEnumerable<Rectangle> rectangles)
