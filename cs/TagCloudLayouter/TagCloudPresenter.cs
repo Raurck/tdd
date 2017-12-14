@@ -4,27 +4,29 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using TagCloud.Interfaces;
 
-namespace TagCloudLayouter
+namespace TagCloud
 {
-    public class TagCloudPresenter
+    public class TagCloudPresenter: ICloudPresenter
     {
         protected int CanvasWidth;
         protected int CanvasHeight;
+        protected RectangleColorProvider rectangleColorProvider;
         public string DefaultSubdirectory { get; set; } = "results";
         public string DefaultFileName { get; set; } = "rectangles.png";
 
 
-        public TagCloudPresenter(int canvasWidth, int canvasHeight)
+        public TagCloudPresenter(int canvasWidth, int canvasHeight, RectangleColorProvider rectangleColorProvider)
         {
             CanvasWidth = canvasWidth;
             CanvasHeight = canvasHeight;
+            this.rectangleColorProvider = rectangleColorProvider;
         }
 
         protected void DrawRectangles(Graphics canvas, IEnumerable<Tuple<Rectangle, Font, string>> tagTuples)
         {
             var tagTuplesArray = tagTuples.ToArray();
-            var rectangleColorProvider = new RectangleColorProvider(tagTuplesArray.Select(tpl => tpl.Item1));
             foreach (var tagTuple in tagTuplesArray)
             {
                 //canvas.DrawRectangle(new Pen(rectangleColorProvider.GetRectangleColor(tagTuple.Item1), 2), tagTuple.Item1);
@@ -37,6 +39,7 @@ namespace TagCloudLayouter
 
         protected string GetRealFileName(string fileName)
         {
+            const string dateTimeFormat = "yyyyMMdd_hhmmss";
             if (String.IsNullOrWhiteSpace(fileName))
             {
                 fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultSubdirectory, DefaultFileName);
@@ -58,7 +61,7 @@ namespace TagCloudLayouter
             {
                 var namePart = Path.GetFileNameWithoutExtension(fileName);
                 var extensionPart = Path.GetExtension(fileName);
-                fileName = Path.Combine(resultDirectory, $"{namePart}_{DateTime.Now.Millisecond}{extensionPart}");
+                fileName = Path.Combine(resultDirectory, $"{namePart}_{DateTime.Now.ToString(dateTimeFormat)}_{DateTime.Now.Millisecond}{extensionPart}");
             }
 
             return fileName;

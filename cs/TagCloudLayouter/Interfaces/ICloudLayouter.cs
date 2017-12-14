@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace TagCloudLayouter.Interfaces
+namespace TagCloud.Interfaces
 {
     public interface ICloudLayouter
     {

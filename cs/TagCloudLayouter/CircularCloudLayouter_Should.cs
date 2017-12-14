@@ -7,7 +7,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
-namespace TagCloudLayouter
+namespace TagCloud
 {
     [TestFixture]
     public class CircularCloudLayouter_Should

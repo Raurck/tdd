@@ -1,4 +1,4 @@
-﻿namespace TagCloudLayouter.Interfaces
+﻿namespace TagCloud.Interfaces
 {
     public interface ITextFileReader
     {

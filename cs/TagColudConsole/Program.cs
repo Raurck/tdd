@@ -3,8 +3,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Grace.DependencyInjection;
-using TagCloudLayouter;
-using TagCloudLayouter.Interfaces;
+using TagCloud;
+using TagCloud.Interfaces;
 
 
 namespace TagColudConsole
@@ -13,6 +13,11 @@ namespace TagColudConsole
     {
         static void Main(string[] args)
         {
+            var tagColud = new SimpleTagCloud();
+            tagColud.GenerateTagCloudFromTextFile(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test_eng.txt"),
+                100).Save("D:\\1.png");
+            /*
             var fr = new SimpleTextFileReader();
             var str = fr.Read(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test_eng.txt"));
             var boringWordsList = fr.Read(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"boring.txt"));
@@ -25,7 +30,7 @@ namespace TagColudConsole
                 new Tuple<Rectangle, Font, string>(layouter.PutNextRectangle(s.GetWordBoundingSize(g.Key, tfp.GetFontForFrequency(g.Value))),
                     tfp.GetFontForFrequency(g.Value), g.Key));
             var tagCloudPresenter = new TagCloudPresenter(1920,1024);
-            tagCloudPresenter.PresentCloudToFile(tpls, "D:\\1.png");
+            tagCloudPresenter.PresentCloudToFile(tpls, "D:\\1.png");*/
         }
     }
 }

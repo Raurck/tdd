@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace TagCloudLayouter
+namespace TagCloud
 {
     public class TagCloudFontProvider
     {

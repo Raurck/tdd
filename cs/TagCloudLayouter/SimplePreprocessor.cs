@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using TagCloudLayouter.Interfaces;
+using TagCloud.Interfaces;
 
-namespace TagCloudLayouter
+namespace TagCloud
 {
     public class SimplePreprocessor : ITagCloudTextPreprocessor
     {
@@ -23,7 +23,6 @@ namespace TagCloudLayouter
         public IEnumerable<KeyValuePair<string, int>> ProcessStrings(string[] text)
         {
             return text
-
                      .SelectMany(str => str.Split(wordSplitters.ToArray()))
                      .Select(w => wordTransformer.GetTransformedWord(w))
                      .Where(w => !string.IsNullOrWhiteSpace(w))

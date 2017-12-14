@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Linq;
 using Microsoft.VisualStudio.Imaging;
 
-namespace TagCloudLayouter
+namespace TagCloud
 {
     public class RectangleColorProvider
     {
@@ -59,7 +59,10 @@ namespace TagCloudLayouter
             maxRectangleHeight = finishedList.Select(rect => rect.Height).Max();
             minRectangleHeight = finishedList.Select(rect => rect.Height).Min();
 
-            var rectanglesHeightArray = finishedList.Select(rectangle => rectangle.Height).Distinct().OrderBy(x => x).ToArray();
+            var rectanglesHeightArray = finishedList.Select(rectangle => rectangle.Height)
+                                            .Distinct()
+                                            .OrderBy(x => x)
+                                            .ToArray();
             var rectanglesColorDictonaryLength = rectanglesHeightArray.Count();
             rectanglesColorDictonary = rectanglesHeightArray
                 .Select((height, pos) => new KeyValuePair<int, float>(height, 1f/5 + 4f/5* (float)pos / rectanglesColorDictonaryLength))

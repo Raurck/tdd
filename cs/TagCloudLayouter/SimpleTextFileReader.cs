@@ -1,7 +1,7 @@
 ﻿using System.IO;
-using TagCloudLayouter.Interfaces;
+using TagCloud.Interfaces;
 
-namespace TagCloudLayouter
+namespace TagCloud
 {
     public class SimpleTextFileReader:ITextFileReader
     {

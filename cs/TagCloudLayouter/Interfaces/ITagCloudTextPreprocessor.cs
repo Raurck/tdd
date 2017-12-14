@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace TagCloudLayouter.Interfaces
+namespace TagCloud.Interfaces
 {
     public interface ITagCloudTextPreprocessor
     {

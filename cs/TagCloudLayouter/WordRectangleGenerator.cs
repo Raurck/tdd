@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
-using TagCloudLayouter.Interfaces;
+using TagCloud.Interfaces;
 
 
-namespace TagCloudLayouter
+namespace TagCloud
 {
     public class WordRectangleGenerator : IWordRectangleGenerator
     {

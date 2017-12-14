@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TagCloudLayouter.Interfaces;
+using TagCloud.Interfaces;
 
-namespace TagCloudLayouter
+namespace TagCloud
 {
     public class SimpleWordTransformer : IWordTransformer
     {

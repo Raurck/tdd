@@ -57,9 +57,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TagCloudLayouter\TagCloudLayouter.csproj">
+    <ProjectReference Include="..\TagCloudLayouter\TagCloud.csproj">
       <Project>{c53522a2-ced2-4c64-9b25-19e73e694561}</Project>
-      <Name>TagCloudLayouter</Name>
+      <Name>TagCloud</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

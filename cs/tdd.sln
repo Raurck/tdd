@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples", "Samples\Samples.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagColudConsole", "TagColudConsole\TagColudConsole.csproj", "{42723364-8DCE-42AA-B789-3A95B8519EF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagCloudLayouter", "TagCloudLayouter\TagCloudLayouter.csproj", "{C53522A2-CED2-4C64-9B25-19E73E694561}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagCloud", "TagCloudLayouter\TagCloud.csproj", "{C53522A2-CED2-4C64-9B25-19E73E694561}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

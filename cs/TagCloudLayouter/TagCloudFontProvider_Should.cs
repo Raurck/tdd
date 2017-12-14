@@ -4,7 +4,7 @@ using NUnit.Framework;
 using FluentAssertions;
 using NUnit.Framework.Internal;
 
-namespace TagCloudLayouter
+namespace TagCloud
 {
     [TestFixture]
     public class TagCloudFontProvider_Should
