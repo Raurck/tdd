@@ -82,6 +82,7 @@
     <Compile Include="Interfaces\ITagCloudTextPreprocessor.cs" />
     <Compile Include="Interfaces\IWordRectangleGenerator.cs" />
     <Compile Include="Interfaces\IWordTransformer.cs" />
+    <Compile Include="Interfaces\IWordTransformerFactory.cs" />
     <Compile Include="SimpleTagCloud.cs" />
     <Compile Include="SimpleWordTransformer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

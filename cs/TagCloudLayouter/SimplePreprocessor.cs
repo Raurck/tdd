@@ -8,12 +8,12 @@ namespace TagCloud
     {
         private readonly IWordTransformer wordTransformer;
         private readonly int tagCloudWordAmount;
-        private IEnumerable<char> wordSplitters = new[] { ' ', ',', '.', ';', ':', '\'', '-', '\n', ' ','’', '”','“', '—' };
+        private IEnumerable<char> wordSplitters = new[] {' ', ',', '.', ';', ':', '\'', '-', '\n', ' ', '’', '”', '“', '—' };
 
         public SimplePreprocessor(
             IWordTransformer wordTransformer,
             int tagCloudWordAmount,
-            IEnumerable<char>wordSplitters = null)
+            IEnumerable<char> wordSplitters = null)
         {
             this.wordTransformer = wordTransformer;
             this.tagCloudWordAmount = tagCloudWordAmount;

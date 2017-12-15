@@ -8,7 +8,7 @@ using TagCloud.Interfaces;
 
 namespace TagCloud
 {
-    public class TagCloudPresenter: ICloudPresenter
+    public class TagCloudPresenter : ICloudPresenter
     {
         protected int CanvasWidth;
         protected int CanvasHeight;
@@ -33,7 +33,7 @@ namespace TagCloud
                 canvas.DrawString(tagTuple.Item3, tagTuple.Item2,
                     new SolidBrush(rectangleColorProvider.GetRectangleColor(tagTuple.Item1)), tagTuple.Item1,
                     StringFormat.GenericDefault);
-                  
+
             }
         }
 
@@ -76,7 +76,7 @@ namespace TagCloud
             }
         }
 
-        public virtual void PresentCloudToFile(IEnumerable<Tuple<Rectangle, Font, string>> tagObjects, string fileName)
+        public virtual string PresentCloudToFile(IEnumerable<Tuple<Rectangle, Font, string>> tagObjects, string fileName)
         {
             fileName = GetRealFileName(fileName);
             using (var presentation = new Bitmap(CanvasWidth, CanvasHeight))
@@ -84,15 +84,15 @@ namespace TagCloud
                 DrawOnCanvas(presentation, tagObjects);
                 presentation.Save(fileName);
             }
+            return fileName;
         }
 
         public virtual Bitmap PresentCloudAsBitmap(IEnumerable<Tuple<Rectangle, Font, string>> tagObjects)
         {
-            using (var presentation = new Bitmap(CanvasWidth, CanvasHeight))
-            {
-                DrawOnCanvas(presentation, tagObjects);
-                return presentation;
-            }
+            var presentation = new Bitmap(CanvasWidth, CanvasHeight);
+            
+            DrawOnCanvas(presentation, tagObjects);
+            return presentation;
         }
     }
 }

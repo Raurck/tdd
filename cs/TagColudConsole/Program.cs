@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using Grace.DependencyInjection;
@@ -14,10 +15,15 @@ namespace TagColudConsole
         static void Main(string[] args)
         {
             var tagColud = new SimpleTagCloud();
-            tagColud.GenerateTagCloudFromTextFile(
+            var bmp =  tagColud.GenerateImageFileFromTextFile(
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test_eng.txt"),
-                100).Save("D:\\1.png");
+                100,
+                "d:\\hobbit_cloud.png",
+                File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "boring.txt"))
+                );
+           // bmp.Save("D:\\1.png");
             /*
+             * -
             var fr = new SimpleTextFileReader();
             var str = fr.Read(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test_eng.txt"));
             var boringWordsList = fr.Read(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"boring.txt"));
